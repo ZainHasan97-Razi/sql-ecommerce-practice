@@ -58,15 +58,27 @@ exports.getEditProduct = async (req, res, next) => {
   }
 };
 
-exports.postEditProduct = (req, res, next) => {
-  const prodId = req.body.productId;
-  const updatedTitle = req.body.title;
-  const updatedPrice = req.body.price;
-  const updatedImageUrl = req.body.imageUrl;
-  const updatedDesc = req.body.description;
-  const updatedProduct = new Product(prodId, updatedTitle, updatedImageUrl, updatedDesc, updatedPrice);
-  updatedProduct.save();
-  res.redirect("/admin/products");
+exports.postEditProduct = async (req, res, next) => {
+  try {
+    const prodId = req.body.productId;
+    const updatedTitle = req.body.title;
+    const updatedPrice = req.body.price;
+    const updatedImageUrl = req.body.imageUrl;
+    const updatedDesc = req.body.description;
+
+    const product = await Product.findByPk(prodId);
+    if (!product) {
+      throw new Error("Invalid product id");
+    }
+    product.title = updatedTitle;
+    product.price = updatedPrice;
+    product.imageUrl = updatedImageUrl;
+    product.description = updatedDesc;
+    await product.save();
+    res.redirect("/admin/products");
+  } catch (e) {
+    console.log("Err at postEditProduct");
+  }
 };
 
 exports.getProducts = async (req, res, next) => {
