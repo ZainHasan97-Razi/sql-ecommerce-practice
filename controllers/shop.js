@@ -14,17 +14,31 @@ exports.getProducts = async (req, res, next) => {
   }
 };
 
-exports.getProduct = (req, res, next) => {
-  const prodId = req.params.productId;
-  Product.findById(prodId)
-    .then(([product]) => {
-      res.render("shop/product-detail", {
-        product: product[0],
-        pageTitle: product.title,
-        path: "/products",
-      });
-    })
-    .catch((err) => console.log(err));
+exports.getProduct = async (req, res, next) => {
+  // // One way
+  try {
+    const prodId = req.params.productId;
+    let response = await Product.findByPk(prodId);
+    res.render("shop/product-detail", {
+      product: response,
+      pageTitle: response.title,
+      path: "/products",
+    });
+  } catch (e) {
+    console.log("Err at getProduct", e);
+  }
+  // // Second way
+  // try {
+  //   const prodId = req.params.productId;
+  //   let response = await Product.findAll({ where: { id: prodId } });
+  //   res.render("shop/product-detail", {
+  //     product: response[0],
+  //     pageTitle: response[0].title,
+  //     path: "/products",
+  //   });
+  // } catch (e) {
+  //   console.log("Err at getProduct", e);
+  // }
 };
 
 exports.getIndex = async (req, res, next) => {

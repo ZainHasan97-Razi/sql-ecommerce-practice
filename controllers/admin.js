@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const { Op } = require("sequelize");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -20,13 +21,17 @@ exports.postAddProduct = (req, res, next) => {
   }
 };
 
-exports.getEditProduct = (req, res, next) => {
-  const editMode = req.query.edit;
-  if (!editMode) {
-    return res.redirect("/");
-  }
-  const prodId = req.params.productId;
-  Product.findById(prodId, (product) => {
+exports.getEditProduct = async (req, res, next) => {
+  try {
+    const editMode = req.query.edit;
+    if (!editMode) {
+      return res.redirect("/");
+    }
+    const prodId = req.params.productId;
+    // // One way
+    const product = await Product.findOne({
+      where: { id: { [Op.eq]: prodId } },
+    });
     if (!product) {
       return res.redirect("/");
     }
@@ -36,7 +41,21 @@ exports.getEditProduct = (req, res, next) => {
       editing: editMode,
       product: product,
     });
-  });
+
+    // // Second way
+    // const product = await Product.findByPk(prodId);
+    // if (!product) {
+    //   return res.redirect("/");
+    // }
+    // res.render("admin/edit-product", {
+    //   pageTitle: "Edit Product",
+    //   path: "/admin/edit-product",
+    //   editing: editMode,
+    //   product: product,
+    // });
+  } catch (e) {
+    console.log("Err at getEditProduct", e);
+  }
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -50,14 +69,17 @@ exports.postEditProduct = (req, res, next) => {
   res.redirect("/admin/products");
 };
 
-exports.getProducts = (req, res, next) => {
-  Product.fetchAll((products) => {
+exports.getProducts = async (req, res, next) => {
+  try {
+    const response = await Product.findAll();
     res.render("admin/products", {
-      prods: products,
+      prods: response,
       pageTitle: "Admin Products",
       path: "/admin/products",
     });
-  });
+  } catch (e) {
+    console.log("Err at getProducts");
+  }
 };
 
 exports.postDeleteProduct = (req, res, next) => {
