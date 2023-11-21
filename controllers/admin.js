@@ -9,13 +9,14 @@ exports.getAddProduct = (req, res, next) => {
   });
 };
 
-exports.postAddProduct = (req, res, next) => {
+exports.postAddProduct = async (req, res, next) => {
   try {
     const title = req.body.title;
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    Product.create({ title, price, imageUrl, description });
+    await Product.create({ title, price, imageUrl, description });
+    res.redirect("/admin/products");
   } catch (e) {
     console.log("Err at postAddProduct");
   }
@@ -94,8 +95,19 @@ exports.getProducts = async (req, res, next) => {
   }
 };
 
-exports.postDeleteProduct = (req, res, next) => {
-  const prodId = req.body.productId;
-  Product.deleteById(prodId);
-  res.redirect("/admin/products");
+exports.postDeleteProduct = async (req, res, next) => {
+  try {
+    const prodId = req.body.productId;
+    const product = await Product.findByPk(prodId);
+    if (!product) {
+      throw new Error("Invalid product id");
+    }
+    await product.destroy();
+    res.redirect("/admin/products");
+  } catch (e) {
+    console.log("Err at postDeleteProduct");
+  }
+  // const prodId = req.body.productId;
+  // Product.deleteById(prodId);
+  // res.redirect("/admin/products");
 };
